@@ -1,0 +1,108 @@
+---
+title: "Assignment 5"
+author: "Aatish Kumar"
+date: "15 Aug 2014"
+output: pdf_document
+---
+
+```{r}
+# read the dataset
+df <- read.csv("seaflow_21min.csv")
+
+#Q1
+summary(df$pop)
+
+#Q2
+summary(df$fsc_small)
+
+#Q3
+library(caret)
+set.seed(3456)
+trainIndex <- createDataPartition(df$pop, p = .5, list = FALSE, times = 1)
+dfTrain <- df[ trainIndex, ]
+dfTest <- df[ -trainIndex, ]
+summary(dfTrain$time)
+
+#Q4
+library(ggplot2)
+p <- ggplot(df, aes(x = chl_small, y = pe, colour = pop))
+p + geom_point()
+
+#Q5-14
+fol <- formula(pop ~ fsc_small + fsc_perp + chl_small + pe + chl_big + chl_small)
+
+#Q5-7
+library(rpart)
+model_decision_tree <- rpart(fol, method="class", data=dfTrain)
+print(model_decision_tree)
+printcp(model_decision_tree)
+
+#Q8
+predicted_decision_tree <- predict(model_decision_tree, type="class", newdata=dfTest)
+accuracy <- sum(predicted_decision_tree == dfTest$pop)/nrow(dfTest)
+print(accuracy)
+
+#Q9
+library(randomForest)
+model_random_forest <- randomForest(fol, data=dfTrain)
+print(model_random_forest)
+
+predicted_random_forest <- predict(model_random_forest, type="class", newdata=dfTest)
+accuracy <- sum(predicted_random_forest == dfTest$pop)/nrow(dfTest)
+print(accuracy)
+
+#Q10
+importance(model_random_forest)
+
+#Q11
+library(e1071)
+model_svm <- svm(fol, data=dfTrain)
+print(model_svm)
+
+predicted_svm <- predict(model_svm, type="class", newdata=dfTest)
+accuracy <- sum(predicted_svm == dfTest$pop)/nrow(dfTest)
+print(accuracy)
+
+#Q12
+table_dt <- table(pred = predicted_decision_tree, true = dfTest$pop)
+table_rf <- table(pred = predicted_random_forest, true = dfTest$pop)
+table_svm <- table(pred = predicted_svm, true = dfTest$pop)
+table_dt
+table_rf
+table_svm
+
+#Q13
+table(df$fsc_big)
+
+#Q14
+library(ggplot2)
+p <- ggplot(df, aes(x = time, y = chl_big, colour = pop))
+p + geom_point()
+
+dfn <- df[df$file_id != 208, ]
+set.seed(3456)
+trainIndex <- createDataPartition(dfn$time, p = .5, list = FALSE, times = 1)
+dfTrain <- dfn[ trainIndex, ]
+dfTest <- dfn[ -trainIndex, ]
+
+fol <- formula(pop ~ fsc_small + fsc_perp + chl_small + pe + chl_big + chl_small)
+
+library(rpart)
+model_decision_tree <- rpart(fol, method="class", data=dfTrain)
+predicted_decision_tree <- predict(model_decision_tree, type="class", newdata=dfTest)
+accuracy <- sum(predicted_decision_tree == dfTest$pop)/nrow(dfTest)
+print(accuracy)
+
+library(randomForest)
+model_random_forest <- randomForest(fol, data=dfTrain)
+predicted_random_forest <- predict(model_random_forest, type="class", newdata=dfTest)
+accuracy <- sum(predicted_random_forest == dfTest$pop)/nrow(dfTest)
+print(accuracy)
+
+library(e1071)
+model_svm <- svm(fol, data=dfTrain)
+predicted_svm <- predict(model_svm, type="class", newdata=dfTest)
+accuracy <- sum(predicted_svm == dfTest$pop)/nrow(dfTest)
+print(accuracy)
+```
+
